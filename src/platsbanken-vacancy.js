@@ -136,7 +136,7 @@ const platsbankenVacancy = ({
     Joi.assert({ countryCode, postalCode, municipality, addressLine, streetName }, {
       countryCode: Joi.string().length(2).required(),
       postalCode: Joi.string().length(5).required(),
-      municipality: Joi.string().length(4).required(),
+      municipality: Joi.string().required(),
       addressLine: Joi.string().max(50).required(),
       streetName: Joi.string().max(50).required(),
     });
@@ -614,7 +614,7 @@ const platsbankenVacancy = ({
   */
 
   jsonJobPositionLocation: ({
-    municipality: Municipality,
+    municipalityCode: Municipality,
     countryCode: CountryCode,
     postalAddress: PostalAddress,
   } = {}) => ({
@@ -624,8 +624,20 @@ const platsbankenVacancy = ({
     ],
   }),
 
-  validateJobPositionLocation({ countryCode, postalCode, municipality, addressLine, streetName }) {
-    this.validatePostalAddress({ countryCode, postalCode, municipality, addressLine, streetName });
+  validateJobPositionLocation({
+    countryCode,
+    postalCode,
+    municipality,
+    municipalityCode,
+    addressLine,
+    streetName,
+  }) {
+    Joi.assert({ municipalityCode }, {
+      municipalityCode: Joi.string().length(4).required(),
+    });
+    this.validatePostalAddress({
+      countryCode, postalCode, municipality, addressLine, streetName,
+    });
   },
 
   jobPositionLocation({
@@ -634,9 +646,10 @@ const platsbankenVacancy = ({
     municipality,
     addressLine,
     streetName,
+    municipalityCode,
   } = {}) {
     this.validateJobPositionLocation({
-      countryCode, postalCode, municipality, addressLine, streetName,
+      countryCode, postalCode, municipality, municipalityCode, addressLine, streetName,
     });
 
     // make sure we have the required parent element
@@ -645,14 +658,14 @@ const platsbankenVacancy = ({
     }
 
     const postalAddress = this.jsonPostalAddress({
-      countryCode,
+      countryCode: 'SE',
       postalCode,
       municipality,
       addressLine,
       streetName,
     });
     this.ref.JobPositionDescription.push(this.jsonJobPositionLocation({
-      municipality,
+      municipalityCode,
       countryCode,
       postalAddress,
     }));
